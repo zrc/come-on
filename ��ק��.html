@@ -1,0 +1,124 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<style>
+#div1 {background:red; width:100px; height:100px; position:absolute; cursor:move;}
+#div2 {background:yellow; width:100px; height:100px; position:absolute; cursor:move;}
+</style>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>无标题文档</title>
+<script type="text/javascript">
+window.onload=function ()
+{
+        var oDiv=document.getElementById('div1');
+        var oDiv1=document.getElementById('div2');
+        var oDrag=new Drag(oDiv);
+        var oDrag1=new Drag(oDiv1);
+        
+        oDrag.onDragStart=function ()
+        {
+                this.style.background='green';
+        };
+        oDrag.onDraging=function (x, y)
+        {
+                document.title=x+','+y;
+        };
+        oDrag.onDragEnd=function ()
+        {
+                this.style.background='red';
+        };
+};
+function Drag(obj)
+{
+        var oBj=this;
+        this._obj=obj;
+        this._mouseStart={};
+        this._divStart={};
+        this._obj.onmousedown=function (ev)
+        {
+                oBj._starDrag(ev);
+        };
+}
+Drag.prototype._starDrag=function(ev)
+{
+        var obj=this;
+        var oEvent=ev||event;
+        this._mouseStart.x=oEvent.clientX;
+        this._mouseStart.y=oEvent.clientY;
+        this._divStart.x=this._obj.offsetLeft;
+        this._divStart.y=this._obj.offsetTop;
+        if(this._obj.setCapture)
+        {
+                this._obj.onmousemove=function(ev)
+                {        
+                        obj._doDrag(ev);
+                }
+                this._obj.onmouseup=function(ev)
+                {        
+                        obj._stopDrag(ev);
+                }
+               
+                this._obj.setCapture();
+        }
+        else
+        {
+                        this._doDrags=function(ev)
+                        {
+                                obj._doDrag(ev);
+                        }
+                        this._stopDrags=function(ev)
+                        {
+                                obj._stopDrag(ev);
+                        }
+                document.addEventListener('mousemove',this._doDrags, true);
+                document.addEventListener('mouseup',this._stopDrags, true);
+        }
+        
+        if(this.onDragStart)
+        {
+                this.onDragStart.call(this._obj);
+        }
+}
+
+
+Drag.prototype._doDrag=function(ev)
+{
+        var oEvent=ev||event;
+        var l=oEvent.clientX-this._mouseStart.x+this._divStart.x;
+        var t=oEvent.clientY-this._mouseStart.y+this._divStart.y;
+        this._obj.style.left=l+'px';
+        this._obj.style.top=t+'px';
+        
+        if(this.onDraging)
+        {
+                this.onDraging.call(this._obj, l, t);
+        }
+}
+Drag.prototype._stopDrag=function(ev)
+{
+        if(this._obj.releaseCapture)
+        {
+                this._obj.onmousemove=null;
+                this._obj.onmouseup=null;
+                this._obj.releaseCapture();
+        }
+        else
+        {
+                document.removeEventListener('mousemove', this._doDrags, true);
+                document.removeEventListener('mouseup', this._stopDrags, true);
+
+                                this._doDrags=this._stopDrags=null;
+        }
+        
+        if(this.onDragEnd)
+        {
+                this.onDragEnd.call(this._obj);
+        }
+}
+</script>
+</head>
+<body>
+<div id="div1"></div>
+<div id="div2"></div>
+</body>
+</html>
